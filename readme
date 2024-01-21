@@ -7,7 +7,8 @@ Structure of repo:
 APP - Contains source of application
 |_
 DOCS - Contains design documentation
-|_
+|_Design Document
+|_NPRE
 DATA - Contains saved data, unused files, etc.
 |_
 

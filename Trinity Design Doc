@@ -1,0 +1,25 @@
+Trinity Cross-Platform Application Design Document
+Created by: Erik Petersen
+
+v1.0 - Create initial document, and included table of contents from Readme to layout structure of what completed document will include.
+
+Contents:
+1.	Project Scope
+2.	Requirements
+2.1.	System Requirements
+2.1.1.	UX/UI requirements
+2.1.2.	Performance Requirements
+2.1.3.	Account Requirements
+2.2.	Software Requirements
+2.2.1.	Content Page requirements
+2.2.2.	Module Requirements
+2.2.3.	Network Requirements
+2.2.4.	Navigation menu requirements
+2.2.5.	Recommendation requirements
+3.	Software Architecture Overview
+4.	Detailed Software Architecture
+4.1.	Platform
+4.2.	Modules
+4.3.	Recommendation Engine
+4.4.	Networking
+4.5.	Security

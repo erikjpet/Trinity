@@ -2,6 +2,7 @@ Trinity Cross-Platform Application Design Document
 Created by: Erik Petersen
 
 v1.0 - Create initial document, and included table of contents from Readme to layout structure of what completed document will include.
+V1.1 - Added initial section 3 "Software Architecture Overview" and included framework choice.
 
 Contents:
 1.	Project Scope
@@ -23,3 +24,18 @@ Contents:
 4.3.	Recommendation Engine
 4.4.	Networking
 4.5.	Security
+
+
+
+
+
+
+
+
+3.	Software Architecture Overview
+
+The application will be utilizing the cross-platform app development framework React Native.
+  - abundance of online resources and forums that can be used to assist in development.
+  - avoids working driectly through Google (Flutter, is created by google).
+  - ability to create desktop app. (Module creation software will be desktop app
+  - Uses TypeScript

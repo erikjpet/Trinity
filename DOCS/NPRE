@@ -1,0 +1,16 @@
+#####################################
+#  Notes, Procedures, Resources, Etc.
+#
+#  The following document is used to 
+#  record things needed and used in the 
+#  development of the trinity application.
+######################################
+
+
+To start react server and test application (web) do the following:
+
+open cmd terminal
+cd C:\Users\theep\Trinity
+npx expo start
+press w in cmd terminal to start web app
+access  http://localhost:8081 on web browser

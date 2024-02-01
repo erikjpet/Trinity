@@ -1,15 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, Image, Modal, TouchableWithoutFeedback, Animated } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StatusBar, ScrollView, ImageBackground, StyleSheet, View, TouchableOpacity, Image, Modal, Animated, PanResponder, Text } from 'react-native';
 
-// Import your PNG image file
 import ButtonIcon from './assets/menubutton.png';
 
-const MenuOverlay = ({ isVisible, onClose }) => {
+gestureTriggered = 0;
+
+// Menu Overlay Component
+const MenuOverlay = ({ isVisible, onClose, onSelect }) => {
   const [selectedButton, setSelectedButton] = useState(1);
 
+  // Function to handle button press
   const handleButtonPress = (buttonId) => {
     setSelectedButton(buttonId);
+    onSelect(buttonId);
+    console.log(`Menu button ${buttonId} pressed`);
   };
 
   return (
@@ -19,34 +23,39 @@ const MenuOverlay = ({ isVisible, onClose }) => {
       visible={isVisible}
       onRequestClose={onClose}
     >
-      <TouchableWithoutFeedback onPress={onClose}>
+      <TouchableOpacity
+        style={styles.overlayBackground}
+        activeOpacity={1}
+        onPress={onClose}
+      >
         <View style={styles.overlay}>
-          {/* Your menu content goes here */}
-          <MenuItem label="Button 1" onPress={() => handleButtonPress(1)} selected={selectedButton === 1} />
-          <MenuItem label="Button 2" onPress={() => handleButtonPress(2)} selected={selectedButton === 2} />
-          <MenuItem label="Button 3" onPress={() => handleButtonPress(3)} selected={selectedButton === 3} />
-          <MenuItem label="Button 4" onPress={() => handleButtonPress(4)} selected={selectedButton === 4} />
+          {/* Menu Items */}
+          <MenuItem label="Trinity" onPress={() => handleButtonPress(1)} selected={selectedButton === 1} />
+          <MenuItem label="Mind" onPress={() => handleButtonPress(2)} selected={selectedButton === 2} />
+          <MenuItem label="Body" onPress={() => handleButtonPress(3)} selected={selectedButton === 3} />
+          <MenuItem label="Spirit" onPress={() => handleButtonPress(4)} selected={selectedButton === 4} />
         </View>
-      </TouchableWithoutFeedback>
+      </TouchableOpacity>
     </Modal>
   );
 };
 
+// Menu Item Component
 const MenuItem = ({ label, onPress, selected }) => {
-  const fontSizeAnim = new Animated.Value(selected ? 32 : 24); // Adjusted the default font size
+  const fontSizeAnim = useRef(new Animated.Value(selected ? 46 : 24)).current;
 
-  const handlePress = () => {
+  useEffect(() => {
     Animated.timing(fontSizeAnim, {
-      toValue: selected ? 46 : 32,
+      toValue: selected ? 46 : 24,
+      duration: 200,
       useNativeDriver: false,
     }).start();
-    onPress(); // Call the onPress function provided by the parent
-  };
+  }, [selected]);
 
   return (
     <TouchableOpacity
       style={[styles.menuButton, selected && styles.selectedButton]}
-      onPress={handlePress}
+      onPress={onPress}
     >
       <Animated.Text style={[styles.menuText, { fontSize: fontSizeAnim, fontWeight: selected ? 'bold' : 'normal' }]}>
         {label}
@@ -55,38 +64,121 @@ const MenuItem = ({ label, onPress, selected }) => {
   );
 };
 
-export default function App() {
-  const [menuVisible, setMenuVisible] = useState(false);
-
-  const handleButtonPress = () => {
-    // Toggle the menu visibility
-    setMenuVisible(!menuVisible);
-  };
-
-  useEffect(() => {
-    // Show the menu by default when the component mounts
-    setMenuVisible(true);
-  }, []);
+// Module Component
+const Module = ({ module }) => {
+  const thumbnailUri = module.thumbnail;
 
   return (
-    <View style={styles.container}>
-      <MenuOverlay isVisible={menuVisible} onClose={() => setMenuVisible(false)} />
+    <View style={styles.module}>
+      {thumbnailUri && (
+        <ImageBackground source={{ uri: thumbnailUri }} style={styles.moduleImage}>
+          {/* Additional content can be added here if needed */}
+        </ImageBackground>
+      )}
+    </View>
+  );
+};
+
+// Main App Component
+export default function App() {
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [selectedModule, setSelectedModule] = useState(null);
+  const [nextModule, setNextModule] = useState(null);
+
+  useEffect(() => {
+    const context = require.context('./assets/modules', true, /thumbnail\.png$/);
+    const loadedModules = loadModules(context);
+
+    const baseModule = loadedModules.find(module => module.id === "BaseModule");
+    const firstNextMod = getRandomModule()
+    setSelectedModule(baseModule);
+    console.log('Selected Module:', baseModule.id);
+
+    console.log('Detected Modules:');
+    loadedModules.forEach((module) => console.log(module.id));
+  }, []);
+
+  const panResponder = React.useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderMove: (_, gestureState) => {
+        if(gestureTriggered < 1){
+          if (gestureState.dy < -50) {
+            handleSwipe('Up');
+            gestureState.dy = 0;
+            gestureTriggered = 1;
+          } else if (gestureState.dy > 50) {
+            handleSwipe('Down');
+            gestureState.dy = 0;
+            gestureTriggered = 1;
+          }
+        }
+      },
+      onPanResponderRelease: () => {
+        gestureTriggered = 0; // Reset gestureTriggered to 0 when touch is released
+      },
+    })
+  ).current;
+
+  // Function to handle menu button press
+  const handleButtonPress = () => {
+    setMenuVisible(!menuVisible);
+  };
+  
+  const loadModules = (context) => {
+    return context.keys().map((key) => {
+      const moduleName = key.split('/').slice(-2, -1)[0];
+      const thumbnailPath = context(key);
+      console.log('Loaded:', moduleName);
+      return {
+        id: moduleName,
+        thumbnail: thumbnailPath.toString(),
+      };
+    });
+  };
+
+  // Function to handle menu item selection
+  const handleMenuSelect = (optionId) => {
+    // Logic to handle menu item selection
+  };
+
+  // Function to handle swipe events
+  const handleSwipe = (direction) => {
+    console.log(`Swipe ${direction} detected`);
+    if (direction == 'Up') {
+
+    } else if (direction == 'Down') {
+
+    }
+  };
+
+  const getRandomModule = () => {
+
+  };
+
+  return (
+    <View style={styles.container} {...panResponder.panHandlers}>
+      <MenuOverlay isVisible={menuVisible} onClose={() => setMenuVisible(false)} onSelect={handleMenuSelect} />
       <TouchableOpacity
         style={styles.button}
         onPress={handleButtonPress}
       >
-        {/* Use Image component to render the PNG image */}
         <Image
           source={ButtonIcon}
           style={styles.buttonIcon}
         />
       </TouchableOpacity>
-      <Text>Welcome to Trinity!</Text>
+      <ScrollView>
+        <View style={styles.scrollContent}>
+          {/* Content */}
+        </View>
+      </ScrollView>
       <StatusBar style="auto" />
     </View>
   );
 }
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -96,9 +188,9 @@ const styles = StyleSheet.create({
   },
   button: {
     position: 'absolute',
-    top: 25, // Adjust the top position as needed
-    left: 20, // Adjust the left position as needed
-    zIndex: 1, // Ensure the button is always on top
+    top: 25,
+    left: 20,
+    zIndex: 1,
     width: 50,
     height: 50,
     justifyContent: 'center',
@@ -108,26 +200,32 @@ const styles = StyleSheet.create({
   buttonIcon: {
     width: 50,
     height: 50,
-    resizeMode: 'contain', // Adjust the image resize mode as needed
+    resizeMode: 'contain',
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)', // Black with 70% opacity
     alignItems: 'center',
-    justifyContent: 'flex-start', // Align menu items to the top
-    paddingTop: 100, // Adjust the top padding to position menu items
+    justifyContent: 'flex-start',
+    paddingTop: 100,
+  },
+  overlayBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
   menuButton: {
-    marginBottom: 20, // Adjust the spacing between buttons as needed
-    paddingVertical: 25, // Adjust the vertical padding to adjust the button height
-    paddingHorizontal: 30, // Adjust the horizontal padding to adjust the button width
+    marginBottom: 20,
+    paddingVertical: 25,
+    paddingHorizontal: 30,
     borderRadius: 5,
-    backgroundColor: 'transparent', // Make the background transparent
+    backgroundColor: 'transparent',
   },
   selectedButton: {
-    backgroundColor: 'transparent', // Make the background transparent when selected
+    backgroundColor: 'transparent',
   },
   menuText: {
-    color: '#fff', // Set the text color
+    color: '#fff',
+  },
+  scrollContent: {
+    paddingTop: 100,
   },
 });

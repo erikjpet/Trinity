@@ -9,8 +9,15 @@
 
 To start react server and test application (web) do the following:
 
-open cmd terminal
+open windows terminal application
 cd C:\Users\theep\Trinity
 npx expo start
+
+WEB APP:
 press w in cmd terminal to start web app
 access  http://localhost:8081 on web browser
+
+Android APP:
+Open android studio, select more options on the main page and open Device Manager.
+Start the desired emulator and power up device
+press a in cmd terminal to start android app

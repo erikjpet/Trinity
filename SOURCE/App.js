@@ -21,6 +21,16 @@ prevBtnPress = -1;
 jpgBackgroundImage = LoadingScreenJPG;
 headerText = '';
 
+const Bubble = ({ module }) => {
+  return (
+    <View style={styles.bubbleContainer}>
+      <Text style={styles.bubbleText}>{module.id}</Text>
+      <Text style={styles.bubbleText}>{module.type}</Text>
+      <Text style={styles.bubbleText}>{module.tags}</Text>
+    </View>
+  );
+};
+
 // Menu Overlay Component
 const MenuOverlay = ({ isVisible, onClose, setCurrBackgroundImage, setCurrHeader, setBgColor }) => {
   const [selectedButton, setSelectedButton] = useState(1);
@@ -168,6 +178,7 @@ const Module = ({ module }) => {
 // Main App Component
 export default function App() {
   const [menuVisible, setMenuVisible] = useState(false);
+  const [loadedModules, setLoadedModules] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null);
   const [nextModule, setNextModule] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -183,14 +194,15 @@ export default function App() {
   useEffect(() => {
     const loadModulesAsync = async () => {
       const context = require.context('./assets/modules', true, /thumbnail\.png$/);
-      const loadedModules = loadModules(context);
+      const tmploadedModules = loadModules(context);
+      setLoadedModules(tmploadedModules);
   
-      const baseModule = loadedModules.find(module => module.id === "BaseModule");
+      const baseModule = tmploadedModules.find(module => module.id === "BaseModule");
       setSelectedModule(baseModule);
       console.log('Selected Module:', baseModule.id);
   
       console.log('Detected Modules:');
-      loadedModules.forEach((module) => console.log(module.id));
+      tmploadedModules.forEach((module) => console.log(module.id));
       
       setLoading(false); // Mark loading as complete
       setMenuVisible(true); // Open menu after loading
@@ -247,7 +259,19 @@ export default function App() {
     styles.headerTextContainer.top = 40;
     console.log('Filter Selected:', label);
     setCurrHeader(label); //set to label name... 
-    getModules(label);
+    
+    //find all modules with tag:
+    foundModules = []
+    end = false;
+    while(end == false){
+      foundModule = getModule(label);
+      if(foundModule == null){
+        end = true;
+      }else{
+        foundModules.push(foundModule);
+        setSelectedModule(foundModule);
+      }
+    }
 
 
   };
@@ -256,17 +280,35 @@ export default function App() {
     return context.keys().map((key) => {
       const moduleName = key.split('/').slice(-2, -1)[0];
       const thumbnailPath = context(key);
-      console.log('Loaded:', moduleName);
+      const moduleInfoContext = require.context('./assets/modules', true, /\.json$/);
+      const moduleInfoKey = moduleInfoContext.keys().find((k) => k.includes(`${moduleName}/module_info.json`));
+      const moduleInfo = moduleInfoContext(moduleInfoKey);
+      console.log('Loaded:', moduleInfo.id);
+      console.log('type:', moduleInfo.type);
+      console.log('tags:', moduleInfo.tags);
       return {
-        id: moduleName,
+        id: moduleInfo.id,
+        type:moduleInfo.type,
+        tags: moduleInfo.tags,
         thumbnail: thumbnailPath.toString(),
+        found: false,
       };
     });
   };
+  
 
 
-  const getModules = (label) => {
+  const getModule = (label) => {
     console.log('Loading modules with tag:', label);
+    try{
+      const taggedModule = loadedModules.find(module => module.tags === label && module.found === false);
+      console.log('Found module with tag:', taggedModule.id);
+      taggedModule.found = true;
+      return taggedModule;
+    }catch(err){
+      console.log("FOUND NO RELEVENT MODULES");
+      return null;
+    }
   };
 
   // Function to handle menu item selection
@@ -369,6 +411,11 @@ export default function App() {
         <View style={styles.headerTextContainer} onPress={handleButtonPress}>
           <Text style={styles.headerText}>{currHeader}</Text>
         </View>
+      )}
+
+      {/* Render the Bubble component when a module is selected */}
+      {selectedModule && (
+        <Bubble module={selectedModule} />
       )}
 
       <StatusBar style="auto" />

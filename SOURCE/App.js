@@ -180,6 +180,7 @@ export default function App() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [loadedModules, setLoadedModules] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null);
+  const [foundModules, setFoundModules] = useState([]);
   const [nextModule, setNextModule] = useState(null);
   const [loading, setLoading] = useState(true);
   const [delayElapsed, setDelayElapsed] = useState(false);
@@ -193,13 +194,12 @@ export default function App() {
 
   useEffect(() => {
     const loadModulesAsync = async () => {
-      const context = require.context('./assets/modules', true, /thumbnail\.png$/);
-      const tmploadedModules = loadModules(context);
+      const tmploadedModules = loadModules();
       setLoadedModules(tmploadedModules);
   
       const baseModule = tmploadedModules.find(module => module.id === "BaseModule");
-      setSelectedModule(baseModule);
-      console.log('Selected Module:', baseModule.id);
+      //setSelectedModule(baseModule);
+      //console.log('Selected Module:', baseModule.id);
   
       console.log('Detected Modules:');
       tmploadedModules.forEach((module) => console.log(module.id));
@@ -247,6 +247,7 @@ export default function App() {
     setMenuVisible(!menuVisible);
     if (!menuVisible) { // This will be true if the menu is about to be shown
       setCurrHeader('');
+      foundModules.forEach((module) => module.found = false);
     }
     console.log("Menu visibility:", menuVisible); // Debugging statement
     jpgBackgroundImage = LoadingScreenJPG;
@@ -259,38 +260,36 @@ export default function App() {
     styles.headerTextContainer.top = 40;
     console.log('Filter Selected:', label);
     setCurrHeader(label); //set to label name... 
+    tmpFoundModules = []
     
     //find all modules with tag:
-    foundModules = []
     end = false;
     while(end == false){
       foundModule = getModule(label);
       if(foundModule == null){
         end = true;
       }else{
-        foundModules.push(foundModule);
-        setSelectedModule(foundModule);
+        tmpFoundModules.push(foundModule);
       }
     }
-
-
+    console.log("Setting foundModules to: ", tmpFoundModules)
+    setFoundModules(tmpFoundModules);
   };
   
-  const loadModules = (context) => {
+  const loadModules = () => {
+    const context = require.context('./assets/modules', true, /\.json$/);
     return context.keys().map((key) => {
       const moduleName = key.split('/').slice(-2, -1)[0];
-      const thumbnailPath = context(key);
       const moduleInfoContext = require.context('./assets/modules', true, /\.json$/);
       const moduleInfoKey = moduleInfoContext.keys().find((k) => k.includes(`${moduleName}/module_info.json`));
       const moduleInfo = moduleInfoContext(moduleInfoKey);
-      console.log('Loaded:', moduleInfo.id);
-      console.log('type:', moduleInfo.type);
-      console.log('tags:', moduleInfo.tags);
+      console.log('Loaded new module:', moduleInfo.id);
+      //console.log('type:', moduleInfo.type);
+      //console.log('tags:', moduleInfo.tags);
       return {
         id: moduleInfo.id,
         type:moduleInfo.type,
         tags: moduleInfo.tags,
-        thumbnail: thumbnailPath.toString(),
         found: false,
       };
     });
@@ -299,14 +298,14 @@ export default function App() {
 
 
   const getModule = (label) => {
-    console.log('Loading modules with tag:', label);
+    //console.log('Loading modules with tag:', label);
     try{
       const taggedModule = loadedModules.find(module => module.tags === label && module.found === false);
       console.log('Found module with tag:', taggedModule.id);
       taggedModule.found = true;
       return taggedModule;
     }catch(err){
-      console.log("FOUND NO RELEVENT MODULES");
+      console.log("Done finding modules");
       return null;
     }
   };

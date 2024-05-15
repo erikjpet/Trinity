@@ -1,5 +1,7 @@
 {
-    "id" : "Music1",
+    "id" : "Twelve Drops",
+	"disc": "Materia Prima",
+    "subdisc": "Leo Z",
     "type": 1,
     "tags": "MUSIC"
 }

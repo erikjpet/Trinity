@@ -10,7 +10,8 @@ import TrinityIcon from './assets/trinityIcon.png';
 import IconMenu from './assets/IconMenu.png';
 
 import { Dimensions } from 'react-native';
-//import { useFonts } from './assets/fonts/PlusJakartaSans-Regular.ttf';
+import * as Font from 'expo-font';
+import PlusJakartaSansRegular from './assets/font/PlusJakartaSans-Regular.ttf';
 
 // Get the dimensions of the screen
 const { width, height } = Dimensions.get('window');
@@ -20,16 +21,8 @@ gestureTriggered = 0;
 prevBtnPress = -1;
 jpgBackgroundImage = LoadingScreenJPG;
 headerText = '';
-
-const Bubble = ({ module }) => {
-  return (
-    <View style={styles.bubbleContainer}>
-      <Text style={styles.bubbleText}>{module.id}</Text>
-      <Text style={styles.bubbleText}>{module.type}</Text>
-      <Text style={styles.bubbleText}>{module.tags}</Text>
-    </View>
-  );
-};
+headerTopMargin = 30;
+headerFontSize = 50;
 
 // Menu Overlay Component
 const MenuOverlay = ({ isVisible, onClose, setCurrBackgroundImage, setCurrHeader, setBgColor }) => {
@@ -67,7 +60,7 @@ const handleButtonPress = (buttonId) => {
       if(prevBtnPress === buttonId) {
         setCurrBackgroundImage(LoadingScreenJPG);
         jpgBackgroundImage = LoadingScreenJPG;
-        headerText = 'BROWSE';
+        headerText = 'TRINITY';
         bgColor = 'rgba(128,167,158)'
       }
       break;
@@ -128,7 +121,7 @@ const handleButtonPress = (buttonId) => {
         <MenuItem label="Mind"  onPress={() => handleButtonPress(1)} selected={selectedButton === 1} />
         <MenuItem label="Body"  onPress={() => handleButtonPress(2)} selected={selectedButton === 2} />
         <MenuItem label="Spirit"  onPress={() => handleButtonPress(3)} selected={selectedButton === 3} />
-        <MenuItem label="Browse"  onPress={() => handleButtonPress(4)} selected={selectedButton === 4} />
+        <MenuItem label="Trinity"  onPress={() => handleButtonPress(4)} selected={selectedButton === 4} />
         <MenuItem label="Contact"  onPress={() => handleButtonPress(5)} selected={selectedButton === 5} />
         <MenuItem label="About"   onPress={() => handleButtonPress(6)} selected={selectedButton === 6} />
       </View>
@@ -164,16 +157,37 @@ const MenuItem = ({ label, onPress, selected }) => {
 const Module = ({ module }) => {
   const thumbnailUri = module.thumbnail;
 
+  const handleImageError = () => {
+    console.log('Error loading image:', thumbnailUri);
+    setImageError(true); // Set image error state
+  };
+
+  console.log('Thumbnail URI:', thumbnailUri);
+
   return (
     <View style={styles.module}>
-      {thumbnailUri && (
-        <ImageBackground source={{ uri: thumbnailUri }} style={styles.moduleImage}>
-          {/* Additional content can be added here if needed */}
-        </ImageBackground>
-      )}
+      <View style={styles.moduleContainer}>
+        {thumbnailUri ? (
+          <Image
+            source={{ uri: thumbnailUri }}
+            style={styles.moduleThumbnail}
+            onError={handleImageError} // Handle image loading error
+          />
+        ) : (
+          <Text style={styles.moduleThumbnail}>No Image</Text> // Display text if no image URI is provided
+        )}
+        <View style={styles.moduleTextContainer}>
+          <Text style={styles.moduleBoldText}>{module.id}</Text>
+          <Text style={styles.moduleText}>{module.disc}</Text>
+          <Text style={styles.moduleText}>{module.subdisc}</Text>
+        </View>
+      </View>
     </View>
   );
 };
+
+
+
 
 // Main App Component
 export default function App() {
@@ -181,6 +195,7 @@ export default function App() {
   const [loadedModules, setLoadedModules] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null);
   const [foundModules, setFoundModules] = useState([]);
+  const [displayedModules, setDisplayedModules] = useState([]);
   const [nextModule, setNextModule] = useState(null);
   const [loading, setLoading] = useState(true);
   const [delayElapsed, setDelayElapsed] = useState(false);
@@ -192,7 +207,9 @@ export default function App() {
   const [buttonLabels, setButtonLabels] = useState([]); // Store button labels
   const [Filtered, setFiltered] = useState(false); // Store button labels
 
+
   useEffect(() => {
+
     const loadModulesAsync = async () => {
       const tmploadedModules = loadModules();
       setLoadedModules(tmploadedModules);
@@ -207,6 +224,7 @@ export default function App() {
       setLoading(false); // Mark loading as complete
       setMenuVisible(true); // Open menu after loading
     };
+
 
     setTimeout(() => {
       setDelayElapsed(true);
@@ -245,22 +263,56 @@ export default function App() {
   // Function to handle menu button press
   const handleButtonPress = () => {
     setMenuVisible(!menuVisible);
+    headerTopMargin = 30;
+    headerFontSize = 50;
     if (!menuVisible) { // This will be true if the menu is about to be shown
       setCurrHeader('');
       foundModules.forEach((module) => module.found = false);
+      setDisplayedModules([]);
     }
     console.log("Menu visibility:", menuVisible); // Debugging statement
     jpgBackgroundImage = LoadingScreenJPG;
     setFiltered(false)
   };
 
+  const moduleButtonPress = (id) => {
+  
+  };
+
+  const displayBrowsePage = () => {
+    setFiltered(true)
+    setCurrHeader('TRINITY'); //set to label name... 
+    headerFontSize = 30;
+    headerTopMargin = 0;
+    tmpFoundModules = [];
+    
+    //Load buffer of modules to grab from:
+    end = false;
+    while(end == false){
+      foundModule = getAnyModule();
+      if(foundModule == null){
+        end = true;
+      }else{
+        tmpFoundModules.push(foundModule);
+      }
+    }
+    console.log("Setting foundModules to: ", tmpFoundModules)
+    if(tmpFoundModules == []){
+      setFoundModules([]);
+    } else{
+      setFoundModules(tmpFoundModules);
+    }
+    displayFoundModules(tmpFoundModules, 5);
+  };
+
 
   const funcButtonPress = (label) => {
     setFiltered(true)
-    styles.headerTextContainer.top = 40;
     console.log('Filter Selected:', label);
     setCurrHeader(label); //set to label name... 
-    tmpFoundModules = []
+    headerFontSize = 30;
+    headerTopMargin = 0;
+    tmpFoundModules = [];
     
     //find all modules with tag:
     end = false;
@@ -273,9 +325,45 @@ export default function App() {
       }
     }
     console.log("Setting foundModules to: ", tmpFoundModules)
-    setFoundModules(tmpFoundModules);
+    if(tmpFoundModules == []){
+      setFoundModules([]);
+    } else{
+      setFoundModules(tmpFoundModules);
+    }
+
+    displayFoundModules(tmpFoundModules, 4);
+
+
   };
   
+
+  const displayFoundModules = (displayModules, mParts) => {
+    //Display a screen with the inputted amount of module parts mParts
+    displayParts = 0; //amount of moduleparts added to display
+    display = [];
+    while(mParts > displayParts){
+      loops = 0;
+      while(5 > loops){
+        randModule = displayModules[Math.floor((Math.random()*displayModules.length))];
+        //console.log(display.includes(randModule));
+        if(!display.includes(randModule)){
+          loops = loops + 1;
+        }else{
+          console.log(2);
+          break;
+        }
+      }
+      if(randModule != null){
+        displayParts = displayParts + randModule.type;
+        display.push(randModule);
+        console.log("Adding to displayed modules: ", randModule.id)
+      } else {
+        displayParts = mParts;
+      }
+    }
+    setDisplayedModules(display);
+  };
+
   const loadModules = () => {
     const context = require.context('./assets/modules', true, /\.json$/);
     return context.keys().map((key) => {
@@ -284,30 +372,43 @@ export default function App() {
       const moduleInfoKey = moduleInfoContext.keys().find((k) => k.includes(`${moduleName}/module_info.json`));
       const moduleInfo = moduleInfoContext(moduleInfoKey);
       console.log('Loaded new module:', moduleInfo.id);
-      //console.log('type:', moduleInfo.type);
-      //console.log('tags:', moduleInfo.tags);
       return {
         id: moduleInfo.id,
-        type:moduleInfo.type,
+        type: moduleInfo.type,
         tags: moduleInfo.tags,
+        disc: moduleInfo.disc,
+        subdisc: moduleInfo.subdisc,
         found: false,
+        thumbnail: `./assets/modules/${moduleName}/thumbnail.png`
       };
     });
   };
   
-
+  const getAnyModule = () => {
+    console.log('Loading one of ANY module');
+    try{
+      const taggedModule = loadedModules.find(module =>  module.found === false);
+      console.log('Found module with tag:', taggedModule.id);
+      taggedModule.found = true;
+      return taggedModule;
+    }catch(err){
+      console.log("Error Finding module.");
+      return null;
+    }
+  };
 
   const getModule = (label) => {
     //console.log('Loading modules with tag:', label);
     try{
       const taggedModule = loadedModules.find(module => module.tags === label && module.found === false);
-      console.log('Found module with tag:', taggedModule.id);
+      console.log('Found module with tag:', taggedModule.id, taggedModule.found);
       taggedModule.found = true;
       return taggedModule;
     }catch(err){
       console.log("Done finding modules");
       return null;
     }
+    return taggedModule;
   };
 
   // Function to handle menu item selection
@@ -319,22 +420,23 @@ export default function App() {
   const handleSwipe = (direction) => {
     console.log(`Swipe ${direction} detected`);
     if (direction == 'Up') {
-
+      console.log("Swipe up");
     } else if (direction == 'Down') {
-
+      console.log("Swipe down");
     }
   };
 
   // Mock function to determine button labels based on header
   const updateButtons = (currHeader) => {
     if (currHeader === 'MIND') {
-      setButtonLabels(['MEDITATION','MUSIC','POSITIVE THINKING','IMAGERY']);
+      setButtonLabels(['MUSIC','MEDITATION','POSITIVE THINKING','IMAGERY']);
     } else if (currHeader === 'BODY') {
-      setButtonLabels(['DIET','EXERCISE & YOGA','STRESS MANAGEMENT']);
+      setButtonLabels(['DIET','EXERCISE','STRESS MANAGEMENT']);
     } else if (currHeader === 'SPIRIT') {
       setButtonLabels(['FAITH','RELATIONSHIPS','FINDING MEANING','FOSTERING HOPE']);
-    } else if (currHeader === 'BROWSE') {
+    } else if (currHeader === 'TRINITY') {
       setButtonLabels([]);
+      displayBrowsePage();
     } else if (currHeader === 'CONTACT') {
       setButtonLabels([]);
     } else if (currHeader === 'ABOUT') {
@@ -408,14 +510,14 @@ export default function App() {
       {/* Header Text */}
       {!menuVisible && !loading && (
         <View style={styles.headerTextContainer} onPress={handleButtonPress}>
-          <Text style={styles.headerText}>{currHeader}</Text>
+          <Text style={styles.headerText, { fontSize: headerFontSize, marginTop: headerTopMargin }}>{currHeader}</Text>
         </View>
       )}
 
-      {/* Render the Bubble component when a module is selected */}
-      {selectedModule && (
-        <Bubble module={selectedModule} />
-      )}
+      {/* Render the Module components when modules are displayed */}
+      {displayedModules.length !== 0 && displayedModules.map((module, index) => (
+        <Module key={index} module={module} /> // Render a Module component for each module
+      ))}
 
       <StatusBar style="auto" />
     </ImageBackground>
@@ -435,8 +537,8 @@ const styles = StyleSheet.create({
     zIndex: 999, // Ensure the button is above other elements
   },
   menuIcon: {
-    top: 5,
-    left: -160,
+    top: -20,
+    left: -170,
     width: 30,
     height: 30,
   },
@@ -489,6 +591,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   menuText: {
+    //fontFamily: 'PlusJakartaSans',
     color: '#fff',
   },
   scrollContent: {
@@ -506,11 +609,12 @@ const styles = StyleSheet.create({
   },
   headerTextContainer: {
     position: 'absolute',
-    top: 80, // Adjust the top position as needed
+    top: headerTopMargin, // Adjust the top position as needed
     alignSelf: 'center',
   },
   headerText: {
-    fontSize: 50,
+    fontSize: headerFontSize,
+    //fontFamily: 'PlusJakartaSansRegular',
     //fontWeight: 'bold',
     color: 'white',
   },
@@ -524,6 +628,45 @@ const styles = StyleSheet.create({
   },
   fbuttonText: {
     color: 'white',
+    //fontFamily: 'PlusJakartaSansRegular',
     fontSize: 16,
+  },
+  module: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  moduleContainer: {
+    flexDirection: 'row', // Arrange thumbnail and text horizontally
+    backgroundColor: 'white', // Example bubble color
+    padding: 10,
+    marginVertical: 15,
+    borderRadius: 5,
+    width: width * 0.8, // Set the width of the bubble
+  },
+  moduleTextContainer: {
+    flex: 1, // Take up remaining space in the bubble
+    flexDirection: 'column', // Arrange text vertically
+    justifyContent: 'space-between', // Space the text evenly
+  },
+  moduleThumbnail: {
+    width: 50, // Adjust thumbnail size as needed
+    height: 50, // Adjust thumbnail size as needed
+    marginRight: 10, // Add spacing between thumbnail and text
+    resizeMode: 'cover',
+    borderRadius: 5,
+  },
+  moduleBoldText: {
+    fontSize: 18,
+    color: 'black',
+    fontWeight: 'bold',
+    //fontFamily: 'PlusJakartaSansRegular',
+    marginBottom: 0,
+  },
+  moduleText: {
+    fontSize: 16,
+    color: 'black',
+    //fontFamily: 'PlusJakartaSansRegular',
+    marginBottom: 0,
   },
 });

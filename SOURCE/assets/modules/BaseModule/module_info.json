@@ -1,5 +1,7 @@
 {
     "id" : "BaseModule",
-    "type": 0,
+	"disc": "",
+    "subdisc": "",
+    "type": 1,
     "tags": "MEDITATION"
 }

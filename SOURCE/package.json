@@ -26,7 +26,8 @@
     "react-native-screens": "~3.22.0",
     "react-native-svg-uri": "^0.0.1",
     "react-native-web": "~0.19.6",
-    "undefined": "react-native-svg-uri\\"
+    "undefined": "react-native-svg-uri\\",
+    "@expo/webpack-config": "^19.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

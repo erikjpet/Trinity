@@ -159,20 +159,20 @@ const Module = ({ module }) => {
 
   const handleImageError = () => {
     console.log('Error loading image:', thumbnailUri);
-    setImageError(true); // Set image error state
   };
 
-  console.log('Thumbnail URI:', thumbnailUri);
+  console.log('Attempting to fetch image from URI:', thumbnailUri);
 
   return (
     <View style={styles.module}>
       <View style={styles.moduleContainer}>
         {thumbnailUri ? (
-          <Image
-            source={{ uri: thumbnailUri }}
+          <Image source={SpiritBackground} style={styles.moduleThumbnail} onError={handleImageError} />
+          /*<Image
+            source={{ uri:thumbnailUri }} // Use the 'uri' format for local file paths 
             style={styles.moduleThumbnail}
-            onError={handleImageError} // Handle image loading error
-          />
+            onError={handleImageError}
+          />*/
         ) : (
           <Text style={styles.moduleThumbnail}>No Image</Text> // Display text if no image URI is provided
         )}
@@ -185,6 +185,8 @@ const Module = ({ module }) => {
     </View>
   );
 };
+
+
 
 
 
@@ -343,13 +345,12 @@ export default function App() {
     display = [];
     while(mParts > displayParts){
       loops = 0;
-      while(5 > loops){
+      while(50 > loops){
         randModule = displayModules[Math.floor((Math.random()*displayModules.length))];
         //console.log(display.includes(randModule));
-        if(!display.includes(randModule)){
+        if(display.includes(randModule)){
           loops = loops + 1;
         }else{
-          console.log(2);
           break;
         }
       }
@@ -649,13 +650,13 @@ const styles = StyleSheet.create({
     flexDirection: 'column', // Arrange text vertically
     justifyContent: 'space-between', // Space the text evenly
   },
-  moduleThumbnail: {
-    width: 50, // Adjust thumbnail size as needed
-    height: 50, // Adjust thumbnail size as needed
-    marginRight: 10, // Add spacing between thumbnail and text
-    resizeMode: 'cover',
-    borderRadius: 5,
-  },
+moduleThumbnail: {
+  width: 50,
+  height: 50,
+  marginRight: 10,
+  borderRadius: 5,
+  overflow: 'hidden', // Ensure the image is not cropped due to borderRadius
+},
   moduleBoldText: {
     fontSize: 18,
     color: 'black',

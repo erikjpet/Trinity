@@ -1,13 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StatusBar, ScrollView, ImageBackground, StyleSheet, View, TouchableOpacity, Image, Modal, Animated, PanResponder, Text } from 'react-native';
 
-import ButtonIcon from './assets/menubutton.png';
-import LoadingScreenJPG from './assets/loadingScreen.jpg'; // Adjust the path to the loading screen JPG file
-import MindBackground from './assets/mindBackground.jpg';
-import BodyBackground from './assets/bodyBackground.jpg';
-import SpiritBackground from './assets/spiritBackground.jpg';
-import TrinityIcon from './assets/trinityIcon.png';
-import IconMenu from './assets/IconMenu.png';
+const images = {
+  ButtonIcon: require('./assets/menubutton.png'),
+  LoadingScreenJPG: require('./assets/loadingScreen.jpg'),
+  MindBackground: require('./assets/mindBackground.jpg'),
+  BodyBackground: require('./assets/bodyBackground.jpg'),
+  SpiritBackground: require('./assets/spiritBackground.jpg'),
+  TrinityIcon: require('./assets/trinityIcon.png'),
+  IconMenu: require('./assets/IconMenu.png'),
+  // Add other images similarly...
+};
+
+// Example of dynamically adding module thumbnails
+const moduleThumbnails = {
+  Equus_nox: require('./assets/modules/Equus_nox/thumbnail.png'),
+  Sfera: require('./assets/modules/Sfera/thumbnail.png'),
+  Watercalling: require('./assets/modules/Watercalling/thumbnail.png'),
+  Twelve_Drops: require('./assets/modules/Twelve_Drops/thumbnail.png'),
+};
+
+const pageDescriptions = {
+  MUSIC: "Lorem ipsum dolor sit amet, consec tetur adipis cing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat:",
+  MEDITATION: "Meditation is the deliberate focusing of attention\nusing controlled breathing along with \nvisualization to enhance feelings of relaxation, \npeace and calm.\n\nEnjoy the following practices daily if possible, or \nwhenever you feel a need for mindful presence.",
+}
 
 import { Dimensions } from 'react-native';
 import * as Font from 'expo-font';
@@ -19,8 +35,9 @@ const { width, height } = Dimensions.get('window');
 //vars
 gestureTriggered = 0;
 prevBtnPress = -1;
-jpgBackgroundImage = LoadingScreenJPG;
+jpgBackgroundImage = images.LoadingScreenJPG;
 headerText = '';
+moduleBotMargin = -80;
 headerTopMargin = 30;
 headerFontSize = 50;
 
@@ -34,62 +51,61 @@ const handleButtonPress = (buttonId) => {
   switch (buttonId) {
     case 1:
       if(prevBtnPress === buttonId) {
-        setCurrBackgroundImage(MindBackground);
-        jpgBackgroundImage = MindBackground;
+        setCurrBackgroundImage(images.MindBackground);
+        jpgBackgroundImage = images.MindBackground;
         headerText = 'MIND';
         bgColor = 'rgba(128,167,158,.34)'
       }
       break;
     case 2:
       if(prevBtnPress === buttonId) {
-        setCurrBackgroundImage(BodyBackground);
-        jpgBackgroundImage = BodyBackground;
+        setCurrBackgroundImage(images.BodyBackground);
+        jpgBackgroundImage = images.BodyBackground;
         headerText = 'BODY';
         bgColor = 'rgba(124, 101, 189, .7)'
       }
       break;
     case 3:
       if(prevBtnPress === buttonId) {
-        setCurrBackgroundImage(SpiritBackground);
-        jpgBackgroundImage = SpiritBackground;
+        setCurrBackgroundImage(images.SpiritBackground);
+        jpgBackgroundImage = images.SpiritBackground;
         headerText = 'SPIRIT';
         bgColor = 'rgba(106, 50, 70, .4)'
       }
       break;
     case 4:
       if(prevBtnPress === buttonId) {
-        setCurrBackgroundImage(LoadingScreenJPG);
-        jpgBackgroundImage = LoadingScreenJPG;
+        setCurrBackgroundImage(images.LoadingScreenJPG);
+        jpgBackgroundImage = images.LoadingScreenJPG;
         headerText = 'TRINITY';
-        bgColor = 'rgba(128,167,158)'
+        bgColor = 'rgba(128,167,158)';
       }
       break;
     case 5:
       if(prevBtnPress === buttonId) {
-        setCurrBackgroundImage(LoadingScreenJPG);
-        jpgBackgroundImage = LoadingScreenJPG;
+        setCurrBackgroundImage(images.LoadingScreenJPG);
+        jpgBackgroundImage = images.LoadingScreenJPG;
         headerText = 'CONTACT';
         bgColor = 'rgba(128,167,158)'
       }
       break;
     case 6:
       if(prevBtnPress === buttonId) {
-        setCurrBackgroundImage(LoadingScreenJPG);
-        jpgBackgroundImage = LoadingScreenJPG;
+        setCurrBackgroundImage(images.LoadingScreenJPG);
+        jpgBackgroundImage = images.LoadingScreenJPG;
         headerText = 'ABOUT';
         bgColor = 'rgba(128,167,158)'
       }
       break;
     default:
       if(prevBtnPress === buttonId) {
-        setCurrBackgroundImage(LoadingScreenJPG);
-        jpgBackgroundImage = LoadingScreenJPG;
+        setCurrBackgroundImage(images.LoadingScreenJPG);
+        jpgBackgroundImage = images.LoadingScreenJPG;
         headerText = '';
         bgColor = 'rgba(128,167,158)'
       }
     break;
   }
-
 
   if (prevBtnPress === buttonId) {
     setCurrHeader(headerText);  // Update the message
@@ -116,7 +132,7 @@ const handleButtonPress = (buttonId) => {
     >
       <View style={styles.overlay}>
         {/* Trinity icon */}
-        <Image source={TrinityIcon} style={styles.trinityIconSm} />
+        <Image source={images.TrinityIcon} style={styles.trinityIconSm} />
         {/* Menu Items */}
         <MenuItem label="Mind"  onPress={() => handleButtonPress(1)} selected={selectedButton === 1} />
         <MenuItem label="Body"  onPress={() => handleButtonPress(2)} selected={selectedButton === 2} />
@@ -155,26 +171,21 @@ const MenuItem = ({ label, onPress, selected }) => {
 
 // Module Component
 const Module = ({ module }) => {
-  const thumbnailUri = module.thumbnail;
-
-  const handleImageError = () => {
-    console.log('Error loading image:', thumbnailUri);
-  };
-
-  console.log('Attempting to fetch image from URI:', thumbnailUri);
+  // Dynamically load the module thumbnail URI from the mapping object
+  const thumbnailUri = moduleThumbnails[module.id];
+  const showThumbnail = thumbnailUri != null;
+  console.log('Module ID:', module.id);
 
   return (
     <View style={styles.module}>
       <View style={styles.moduleContainer}>
-        {thumbnailUri ? (
-          <Image source={SpiritBackground} style={styles.moduleThumbnail} onError={handleImageError} />
-          /*<Image
-            source={{ uri:thumbnailUri }} // Use the 'uri' format for local file paths 
+        {showThumbnail ? (
+          <Image
+            source={thumbnailUri} // Use the imported image directly
             style={styles.moduleThumbnail}
-            onError={handleImageError}
-          />*/
+          />
         ) : (
-          <Text style={styles.moduleThumbnail}>No Image</Text> // Display text if no image URI is provided
+          <Text></Text> // Display text if no valid image URI is provided
         )}
         <View style={styles.moduleTextContainer}>
           <Text style={styles.moduleBoldText}>{module.id}</Text>
@@ -202,8 +213,9 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [delayElapsed, setDelayElapsed] = useState(false);
   const [imageError, setImageError] = useState(false); // New state to track image loading error
-  const [currBackgroundImage, setCurrBackgroundImage] = useState(LoadingScreenJPG); // State for background image
+  const [currBackgroundImage, setCurrBackgroundImage] = useState(images.LoadingScreenJPG); // State for background image
   const [currHeader, setCurrHeader] = useState(''); // State for header
+  const [currDisc, setCurrDisc] = useState('');
   const [menuText, setMenuText] = useState(''); // State for menu text
   const [bgColor, setBgColor] = useState('rgba(44, 0, 256, 0.34)');  // Default purple color
   const [buttonLabels, setButtonLabels] = useState([]); // Store button labels
@@ -227,6 +239,7 @@ export default function App() {
       setMenuVisible(true); // Open menu after loading
     };
 
+    
 
     setTimeout(() => {
       setDelayElapsed(true);
@@ -269,11 +282,12 @@ export default function App() {
     headerFontSize = 50;
     if (!menuVisible) { // This will be true if the menu is about to be shown
       setCurrHeader('');
+      setCurrDisc('');
       foundModules.forEach((module) => module.found = false);
       setDisplayedModules([]);
     }
     console.log("Menu visibility:", menuVisible); // Debugging statement
-    jpgBackgroundImage = LoadingScreenJPG;
+    jpgBackgroundImage = images.LoadingScreenJPG;
     setFiltered(false)
   };
 
@@ -284,8 +298,10 @@ export default function App() {
   const displayBrowsePage = () => {
     setFiltered(true)
     setCurrHeader('TRINITY'); //set to label name... 
+    setCurrDisc('');
     headerFontSize = 30;
     headerTopMargin = 0;
+    moduleBotMargin = 60;
     tmpFoundModules = [];
     
     //Load buffer of modules to grab from:
@@ -309,10 +325,14 @@ export default function App() {
 
 
   const funcButtonPress = (label) => {
-    setFiltered(true)
+    setFiltered(true);
     console.log('Filter Selected:', label);
     setCurrHeader(label); //set to label name... 
+    Disc = pageDescriptions[label];
+    console.log("disc = ", Disc);
+    setCurrDisc(Disc);
     headerFontSize = 30;
+    moduleBotMargin = -80;
     headerTopMargin = 0;
     tmpFoundModules = [];
     
@@ -372,7 +392,12 @@ export default function App() {
       const moduleInfoContext = require.context('./assets/modules', true, /\.json$/);
       const moduleInfoKey = moduleInfoContext.keys().find((k) => k.includes(`${moduleName}/module_info.json`));
       const moduleInfo = moduleInfoContext(moduleInfoKey);
-      console.log('Loaded new module:', moduleInfo.id);
+      const thumbnailUri = moduleThumbnails[moduleInfo.id]
+  
+      console.log('Loaded new module:', moduleInfo.id); 
+      console.log('ModuleInfo:', moduleInfo);
+      console.log('Thumbnail URI:', thumbnailUri);
+      
       return {
         id: moduleInfo.id,
         type: moduleInfo.type,
@@ -380,10 +405,11 @@ export default function App() {
         disc: moduleInfo.disc,
         subdisc: moduleInfo.subdisc,
         found: false,
-        thumbnail: `./assets/modules/${moduleName}/thumbnail.png`
+        thumbnail: thumbnailUri
       };
     });
   };
+  
   
   const getAnyModule = () => {
     console.log('Loading one of ANY module');
@@ -465,7 +491,7 @@ export default function App() {
       {/* Menu Button */}
       {!menuVisible && !loading && (
         <TouchableOpacity style={styles.menuButton} onPress={handleButtonPress}>
-          <Image source={ButtonIcon} style={styles.menuIcon} />
+          <Image source={images.ButtonIcon} style={styles.menuIcon} />
         </TouchableOpacity>
       )}
 
@@ -483,7 +509,7 @@ export default function App() {
       {/* Display Trinity icon during the initial 2-second delay */}
       {loading && !delayElapsed ? (
         <View style={styles.trinityIconContainer}>
-          <Image source={TrinityIcon} style={styles.trinityIcon} />
+          <Image source={images.TrinityIcon} style={styles.trinityIcon} />
         </View>
       ) : (
         <ScrollView>
@@ -495,11 +521,11 @@ export default function App() {
 
       {/* Display the menu after the delay */}
       {!loading && delayElapsed && (
-        <MenuOverlay isVisible={menuVisible} onClose={handleButtonPress} setCurrBackgroundImage={setCurrBackgroundImage} setCurrHeader={setCurrHeader} bgColor={bgColor} setBgColor={setBgColor} />
+        <MenuOverlay isVisible={menuVisible} onClose={handleButtonPress} setCurrBackgroundImage={setCurrBackgroundImage} setCurrHeader={setCurrHeader} setCurrDisc={setCurrDisc} bgColor={bgColor} setBgColor={setBgColor} />
       )}
 
       <View style={styles.MenuIconContainer}>
-        <Image source={IconMenu} style={styles.MenuIcon} />
+        <Image source={images.IconMenu} style={styles.MenuIcon} />
       </View>
 
       {menuText !== '' && (
@@ -511,16 +537,23 @@ export default function App() {
       {/* Header Text */}
       {!menuVisible && !loading && (
         <View style={styles.headerTextContainer} onPress={handleButtonPress}>
-          <Text style={styles.headerText, { fontSize: headerFontSize, marginTop: headerTopMargin }}>{currHeader}</Text>
+          <Text style={[styles.headerText, { fontSize: headerFontSize, marginTop: headerTopMargin }]}>{currHeader}</Text>
+        </View>
+      )}
+
+      {/* Header Disc Text */}
+      {!menuVisible && !loading && (
+        <View style={styles.headerDiscTextContainer} onPress={handleButtonPress}>
+          <Text style={styles.headerDiscText}>{currDisc}</Text>
         </View>
       )}
 
       {/* Render the Module components when modules are displayed */}
-      {displayedModules.length !== 0 && displayedModules.map((module, index) => (
-        <Module key={index} module={module} /> // Render a Module component for each module
+      {displayedModules.length !== 0 && displayedModules.map((module, index) => ( //Render a Module component for each module
+        <View style={[styles.module, {marginBottom: moduleBotMargin}]}>
+          <Module key={index} module={module} /> 
+        </View>
       ))}
-
-      <StatusBar style="auto" />
     </ImageBackground>
   );
 }
@@ -619,6 +652,16 @@ const styles = StyleSheet.create({
     //fontWeight: 'bold',
     color: 'white',
   },
+  headerDiscTextContainer: {
+    position: 'absolute',
+    top: headerTopMargin + 60, // Adjust the top position as needed
+    alignSelf: 'center',
+    width: width * 0.85, // Set the width of the bubble\
+  },
+  headerDiscText: {
+    fontSize: 16,
+    color: 'white',
+  },
   fbutton: {
     backgroundColor: 'grey', // Example button color
     top: 80, 
@@ -635,15 +678,19 @@ const styles = StyleSheet.create({
   module: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    //justifyContent: 'center',
+    //marginBottom: -80,
   },
   moduleContainer: {
     flexDirection: 'row', // Arrange thumbnail and text horizontally
     backgroundColor: 'white', // Example bubble color
-    padding: 10,
-    marginVertical: 15,
+    alignItems: 'center',
+    padding: 12,
     borderRadius: 5,
-    width: width * 0.8, // Set the width of the bubble
+    width: width * 0.9, // Set the width of the bubble
+    height: 105,
+    
+    marginTop: -100, // Adjusts the space above each module
   },
   moduleTextContainer: {
     flex: 1, // Take up remaining space in the bubble
@@ -651,8 +698,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between', // Space the text evenly
   },
 moduleThumbnail: {
-  width: 50,
-  height: 50,
+  width: 60,
+  height: 60,
   marginRight: 10,
   borderRadius: 5,
   overflow: 'hidden', // Ensure the image is not cropped due to borderRadius
@@ -661,7 +708,7 @@ moduleThumbnail: {
     fontSize: 18,
     color: 'black',
     fontWeight: 'bold',
-    //fontFamily: 'PlusJakartaSansRegular',
+    //fontFamily: PlusJakartaSansRegular,
     marginBottom: 0,
   },
   moduleText: {

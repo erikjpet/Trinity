@@ -10,7 +10,7 @@
 To start react server and test application (web) do the following:
 
 open windows terminal application
-cd C:\Users\theep\Trinity
+cd C:\Users\theep\TrinityGithubRepo\Trinity\SOURCE
 npx expo start
 
 WEB APP:
